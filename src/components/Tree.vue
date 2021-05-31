@@ -1,18 +1,11 @@
 <template>
-  <div>
-    <div id="app" :class="{ 'selected-canvas': selectedCanvas }"></div>
-    <tree />
-  </div>
+  <div id="tree" :class="{ 'selected-canvas': selectedCanvas }"></div>
 </template>
 
 <script>
 import G6 from "@antv/g6";
-import Tree from "./components/Tree.vue";
 
 export default {
-  components: {
-    Tree,
-  },
   data() {
     return {
       selectedCanvas: false,
@@ -20,67 +13,40 @@ export default {
   },
   mounted() {
     const data = {
-      // 点集
-      nodes: [
+      id: "root",
+      label: "root",
+      children: [
         {
-          type: "rect",
-          id: "node2",
-          label: "node2",
+          id: "subTree1",
+          label: "subTree1",
+          children: [],
         },
         {
-          id: "node1",
-          label: "node1",
-          type: "rect",
+          id: "subTree2",
+          label: "subTree2",
+          children: [],
         },
-        {
-          type: "rect",
-          id: "node3",
-          label: "node3",
-        },
-        {
-          type: "rect",
-          id: "node0",
-          label: "node0",
-        },
-      ],
-      // 边集
-      edges: [
-        {
-          source: "node3",
-          target: "node1",
-        },
-        {
-          source: "node1", // String，必须，起始点 id
-          target: "node2", // String，必须，目标点 id
-          label: "edge 1",
-          // style: {
-          //   endArrow: {
-          //     path: G6.Arrow.vee(),
-          //   },
-          //   cursor: "pointer",
-          //   lineAppendWidth: 4,
-          // },
-        },
-        // {
-        //   source: "node3",
-        //   target: "node0",
-        //   label: "edge 1",
-        // },
       ],
     };
 
-    const container = document.getElementById("app");
+    const container = document.getElementById("tree");
     const width = container.scrollWidth;
     const height = container.scrollHeight || 500;
-    const graph = new G6.Graph({
-      container , // String | HTMLElement，必须，在 Step 1 中创建的容器 id 或容器本身
-      width , // Number，必须，图的宽度
+
+    const graph = new G6.TreeGraph({
+      container, // String | HTMLElement，必须，在 Step 1 中创建的容器 id 或容器本身
+      width, // Number，必须，图的宽度
       height, // Number，必须，图的高度
-      fitCenter: true,
-      // layout: {
-      //   type: "gForce",
-      //   linkDistance:200
-      // },
+      layout: {
+        type: "compactBox",
+        direction: "LR",
+        getHGap: function () {
+          return 80;
+        },
+      },
+      defaultNode: {
+        type: "rect",
+      },
       defaultEdge: {
         style: {
           endArrow: {
@@ -93,13 +59,6 @@ export default {
       },
       modes: {
         default: ["drag-node"],
-        // altSelect: [
-        //   {
-        //     type: "click-select",
-        //     trigger: "alt",
-        //   },
-        //   "drag-node",
-        // ],
       },
     });
     graph.data(data); // 读取 Step 2 中的数据源到图上
