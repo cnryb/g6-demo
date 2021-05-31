@@ -1,13 +1,51 @@
 <template>
   <div>
     <div id="app" :class="{ 'selected-canvas': selectedCanvas }"></div>
-    <tree />
+    <tree v-if="false" />
   </div>
 </template>
 
 <script>
 import G6 from "@antv/g6";
 import Tree from "./components/Tree.vue";
+const data = [
+  {
+    id: 324,
+    name: "这个节点的名字是真的比较长呀",
+    parentId: [],
+    type: "TAG",
+  },
+  {
+    id: 326,
+    name: "abced node",
+    parentId: [325],
+    type: "TAG",
+  },
+  {
+    id: 325,
+    name: "line",
+    parentId: [324],
+    type: "PATH",
+  },
+];
+let nodeList = null;
+if (data.every((item) => item.parentId.length === 0)) {
+  // 散点，点之间无关联
+} else {
+  const head = data.find((item) => item.parentId.length === 0);
+  buildNodeList(head, data);
+  console.log(head);
+  nodeList = head;
+}
+
+function buildNodeList(head, source) {
+  source.forEach((item) => {
+    if (item.parentId.some((p) => p === head.id)) {
+      head.child = item;
+      buildNodeList(item, source);
+    }
+  });
+}
 
 export default {
   components: {
@@ -23,14 +61,14 @@ export default {
       // 点集
       nodes: [
         {
-          type: "rect",
-          id: "node2",
-          label: "node2",
-        },
-        {
           id: "node1",
           label: "node1",
           type: "rect",
+        },
+        {
+          type: "rect",
+          id: "node2",
+          label: "node2",
         },
         {
           type: "rect",
@@ -68,13 +106,39 @@ export default {
         // },
       ],
     };
-
+    if (nodeList) {
+      data.nodes = [];
+      data.edges = [];
+      let node = nodeList;
+      while (node) {
+        if (node.type === "TAG") {
+          data.nodes.push({
+            id: node.id + "",
+            label: node.name,
+          });
+          if (node.child && node.child.type === "PATH") {
+            data.edges.push({
+              source: node.id + "",
+              target: node.child.child.id + "",
+              label: node.child.name,
+            });
+            node = node.child.child;
+          } else {
+            node = node.child;
+          }
+        } else {
+          console.error("数据异常");
+          data.edges.push({});
+          node = node.child;
+        }
+      }
+    }
     const container = document.getElementById("app");
     const width = container.scrollWidth;
     const height = container.scrollHeight || 500;
     const graph = new G6.Graph({
-      container , // String | HTMLElement，必须，在 Step 1 中创建的容器 id 或容器本身
-      width , // Number，必须，图的宽度
+      container, // String | HTMLElement，必须，在 Step 1 中创建的容器 id 或容器本身
+      width, // Number，必须，图的宽度
       height, // Number，必须，图的高度
       fitCenter: true,
       // layout: {
@@ -90,6 +154,9 @@ export default {
           lineAppendWidth: 5,
           cursor: "pointer",
         },
+      },
+      defaultNode: {
+        type: "rect",
       },
       modes: {
         default: ["drag-node"],
