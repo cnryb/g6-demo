@@ -57,18 +57,28 @@ export default {
     };
   },
   mounted() {
+    const fontSize = 12;
     const data = {
       // 点集
       nodes: [
         {
+          type: "rect",
+          id: "node2",
+          label: "这个节点的名字也是真的比较长呀",
+          // width: G6.Util.getTextSize('这个节点的名字也是真的比较长呀', fontSize)[0],
+          // size:[180+16*2,30],
+          size: [180 + 16 * 2, 12 + 9 * 2],
+          labelCfg: {
+            style: {
+              fill: "#9254de",
+              fontSize,
+            },
+          },
+        },
+        {
           id: "node1",
           label: "node1",
           type: "rect",
-        },
-        {
-          type: "rect",
-          id: "node2",
-          label: "node2",
         },
         {
           type: "rect",
@@ -112,9 +122,13 @@ export default {
       let node = nodeList;
       while (node) {
         if (node.type === "TAG") {
+          const size = G6.Util.getTextSize(node.name, fontSize);
+          size[0] += 16 * 2;
+          size[1] += 9 * 2;
           data.nodes.push({
             id: node.id + "",
             label: node.name,
+            size,
           });
           if (node.child && node.child.type === "PATH") {
             data.edges.push({
